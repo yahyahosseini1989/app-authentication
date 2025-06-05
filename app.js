@@ -14,4 +14,4 @@ app.use('/api/users', usersRoute)
 app.use('/', homeRoute)
 
 const port = process.env.APP_PORT || 8000
-app.listen(port, () => { console.log(`App listening on port ${port}`) })
+app.listen(port, () => { console.debug(`App listening on port ${port}`) })

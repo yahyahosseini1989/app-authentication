@@ -11,7 +11,6 @@ const register = async (req, res, next) => {
 		email: Joi.string().email().required(),
 		password: Joi.string().length(8).required(),
 	}
-	console.log('req.body :>> ', req.body);
 	const validateResult = Joi.object(schema).validate(req.body)
 	if (validateResult.error)
 		return res.send(validateResult.error.details[0].message)
@@ -22,10 +21,23 @@ const register = async (req, res, next) => {
 	const hashPassword = await bcrypt.hash(req.body.password, 10)
 	await UsersModel.insertUser(req.body.username, req.body.email, hashPassword, req.body.first_name, req.body.last_name)
 	const newUser = await UsersModel.getUserByEmail(req.body.email)
-	console.log('newUser :>> ', newUser);
 	res.send(_.pick(newUser, ['id, username', 'email', 'first_name', 'last_name']))
 }
 
-const login = async (req, res, next) => { }
+const login = async (req, res, next) => {
+	const schema = {
+		email: Joi.string().email().required(),
+		password: Joi.string().length(8).required(),
+	}
+	const validateResult = Joi.object(schema).validate(req.body)
+	if (validateResult.error)
+		return res.send(validateResult.error.details[0].message)
+
+	const user = await UsersModel.getUserByEmail(req.body.email)
+	if (!user) return res.status(400).send(`email or password is invalid`)
+	const isValidPass = await bcrypt.compare(req.body.password, user.password)
+	if (!isValidPass) return res.status(400).send(`email or password is invalid`)
+	res.send(`login`)
+}
 
 module.exports = { register, login }

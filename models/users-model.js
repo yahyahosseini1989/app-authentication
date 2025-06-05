@@ -6,7 +6,6 @@ class UsersModel {
     const request = pool.request()
     request.input("email", sql.NVarChar, email)
     const {recordset} = await request.query('SELECT * FROM users WHERE email = @email;')
-    console.log('user info :>> ', recordset[0]);
     return recordset[0]
   }
   
