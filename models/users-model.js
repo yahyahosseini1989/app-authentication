@@ -1,4 +1,5 @@
 const { sql, poolPromise } = require('../utilities/mssql_database');
+const trycatchHandler = require('../utilities/trycatch_handler');
 
 class UsersModel {
   static getUserByEmail = async (email) => {

@@ -5,8 +5,9 @@ const UsersModel = require('../models/users-model');
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const trycatchHandler = require('../utilities/trycatch_handler');
 
-const register = async (req, res, next) => {
+const register = trycatchHandler(async (req, res, next) => {
 	const schema = {
 		username: Joi.string().min(3).max(50).required(),
 		first_name: Joi.string().min(3).max(50).required(),
@@ -26,9 +27,9 @@ const register = async (req, res, next) => {
 	const newUser = await UsersModel.getUserByEmail(req.body.email)
 	const token =	jwt.sign({id: user.id}, process.env.SECRET_KEY)
 	res.header('token', token).send(_.pick(newUser, ['id, username', 'email', 'first_name', 'last_name']))
-}
+})
 
-const login = async (req, res, next) => {
+const login = trycatchHandler(async (req, res, next) => {
 	const schema = {
 		email: Joi.string().email().required(),
 		password: Joi.string().length(8).required(),
@@ -45,6 +46,6 @@ const login = async (req, res, next) => {
 	const token =	jwt.sign({id: user.id}, process.env.SECRET_KEY)
 	const userInfo = _.omit(user, ['password']);
 	res.header('token', token).send({token, userInfo})
-}
+})
 
 module.exports = { register, login }
