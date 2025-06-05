@@ -1,7 +1,10 @@
+require('dotenv').config()
+
 const Joi = require('joi');
 const UsersModel = require('../models/users-model');
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const register = async (req, res, next) => {
 	const schema = {
@@ -21,7 +24,8 @@ const register = async (req, res, next) => {
 	const hashPassword = await bcrypt.hash(req.body.password, 10)
 	await UsersModel.insertUser(req.body.username, req.body.email, hashPassword, req.body.first_name, req.body.last_name)
 	const newUser = await UsersModel.getUserByEmail(req.body.email)
-	res.send(_.pick(newUser, ['id, username', 'email', 'first_name', 'last_name']))
+	const token =	jwt.sign({id: user.id}, process.env.SECRET_KEY)
+	res.header('token', token).send(_.pick(newUser, ['id, username', 'email', 'first_name', 'last_name']))
 }
 
 const login = async (req, res, next) => {
@@ -37,7 +41,10 @@ const login = async (req, res, next) => {
 	if (!user) return res.status(400).send(`email or password is invalid`)
 	const isValidPass = await bcrypt.compare(req.body.password, user.password)
 	if (!isValidPass) return res.status(400).send(`email or password is invalid`)
-	res.send(`login`)
+
+	const token =	jwt.sign({id: user.id}, process.env.SECRET_KEY)
+	const userInfo = _.omit(user, ['password']);
+	res.header('token', token).send({token, userInfo})
 }
 
 module.exports = { register, login }
